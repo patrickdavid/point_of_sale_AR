@@ -10,7 +10,7 @@ ActiveRecord::Base.establish_connection(YAML::load(File.open('./db/config.yml'))
 
 @current_customer
 @current_cashier
-@current_sale
+@current_sale = Sale.last
 @current_product
 @current_purchase
 
@@ -73,7 +73,7 @@ def cashier_menu
   when 'N'
     create_sale
   when 'R'
-    reciept
+    reciept_menu
   when 'P'
     refund
   when 'M'
@@ -149,16 +149,53 @@ def create_sale
     quantity = gets.chomp.to_i
     new_purchase = Purchase.create({quantity: quantity, sale_id: @current_sale.id, product_id: @current_product.id})
     @current_sale.purchases << new_purchase
-    reciept
+    current_reciept
     puts "Add another purchase? (Y/N)"
     response = gets.chomp.upcase
   end
   cashier_menu
 end
 
-def reciept
-  puts "Your current reciept:"
+def reciept_menu
+  puts "Would you like to..."
+  puts "[C] << See the current reciept"
+  puts "[S] << Generate a reciept for a previous sale"
+  puts "[M] << Return to the cashier menu"
+  case gets.chomp.upcase
+  when "C"
+    current_reciept
+    reciept_menu
+  when "S"
+    reciept_search
+    reciept_menu
+  when "M"
+    cashier_menu
+  else
+    trippin
+    reciept_menu
+  end
+end
+
+def reciept_search
+  puts "Please choose a customer from the following list:"
+  Customer.all.each_with_index { |customer, index| puts "#{index + 1} #{customer.name}"}
+  choice = gets.chomp.to_i - 1
+  @current_customer = Customer.all[choice]
+  puts "Please choose from the following sales for this customer by date: "
+  @current_customer.sales.each_with_index do |sale, i|
+    puts "#{i + 1} #{sale.created_at.strftime("%Y-%m-%d")}"
+  end
+  choice = gets.chomp.to_i - 1
+  @current_sale = @current_customer.sales[choice]
+  current_reciept
+  any_key
+  reciept_menu
+end
+
+def current_reciept
+  puts "Here is your reciept:"
   @current_sale.purchases.each do |purchase|
+    # binding.pry
     puts "#{purchase.product.name} x #{purchase.quantity} @ #{purchase.product.price} = #{purchase.quantity * purchase.product.price}"
   end
   puts "Your total is : #{total}"
