@@ -114,6 +114,18 @@ def total_sales
   puts total
 end
 
+def search_sales
+  puts "Please choose a customer from the following list:"
+  Customer.all.each_with_index { |customer, index| puts "#{index + 1} #{customer.name}"}
+  choice = gets.chomp.to_i - 1
+  @current_customer = Customer.all[choice]
+  Sale.all.each do |sale|
+    sale.purchases.each do |purchase|
+      total += (purchase.quantity.to_i * purchase.product.price)
+
+  end
+end
+
 def add_product
   puts "Please enter Product name."
   name = gets.chomp
