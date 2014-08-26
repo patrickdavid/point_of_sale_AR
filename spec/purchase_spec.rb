@@ -1,5 +1,6 @@
 require 'spec_helper'
 
 describe Purchase do
-  it { should have_one :product }
+  it { should belong_to :product }
+  it { should belong_to :sale }
 end
