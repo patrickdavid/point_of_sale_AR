@@ -1,4 +1,5 @@
 require 'active_record'
+require 'pry'
 require './lib/purchase'
 require './lib/product'
 require './lib/sale'
@@ -6,6 +7,12 @@ require './lib/cashier'
 require './lib/customer'
 
 ActiveRecord::Base.establish_connection(YAML::load(File.open('./db/config.yml'))["development"])
+
+@current_customer
+@current_cashier
+@current_sale
+@current_product
+@current_purchase
 
 def welcome
   system 'clear'
@@ -55,6 +62,8 @@ end
 
 def cashier_menu
   system 'clear'
+  cashier_login
+  system 'clear'
   puts 'Please choose from the following'
   puts '[N] << Create new sale'
   puts '[R] << Generate reciept'
@@ -96,6 +105,73 @@ def add_cashier
   any_key
   manager_menu
 end
+
+def add_customer
+  puts "Please enter the Customer name"
+  name = gets.chomp
+  @current_customer = Customer.create({name: name})
+  puts "New customer added!"
+  any_key
+end
+
+def cashier_login
+  puts "Please enter your cashier login"
+  entry = gets.chomp.to_i
+  @current_cashier = Cashier.find_by(login: entry)
+  if @current_cashier != nil
+    puts "Logged in as cashier: #{@current_cashier.name}"
+    sleep 2
+  else
+    puts "login invalid!"
+    cashier_login
+  end
+end
+
+def create_sale
+  puts "Is this a new customer? (Y/N)"
+  reply = gets.chomp.upcase
+  if reply == "Y"
+    add_customer
+  else
+    puts "Please choose a customer from the following list:"
+    Customer.all.each_with_index { |customer, index| puts "#{index + 1} #{customer.name}"}
+    choice = gets.chomp.to_i - 1
+    @current_customer = Customer.all[choice]
+  end
+  @current_sale = Sale.create(cashier_id: @current_cashier.id, customer_id: @current_customer.id)
+  response = ''
+  until response == 'N' do
+    puts "Please choose a product number from the following list:"
+    Product.all.each_with_index { |product, index| puts "#{index + 1} #{product.name} $#{product.price}" }
+    choice = gets.chomp.to_i - 1
+    @current_product = Product.all[choice]
+    puts "Please enter the quantity of this product"
+    quantity = gets.chomp.to_i
+    new_purchase = Purchase.create({quantity: quantity, sale_id: @current_sale.id, product_id: @current_product.id})
+    @current_sale.purchases << new_purchase
+    reciept
+    puts "Add another purchase? (Y/N)"
+    response = gets.chomp.upcase
+  end
+  cashier_menu
+end
+
+def reciept
+  puts "Your current reciept:"
+  @current_sale.purchases.each do |purchase|
+    puts "#{purchase.product.name} x #{purchase.quantity} @ #{purchase.product.price} = #{purchase.quantity * purchase.product.price}"
+  end
+  puts "Your total is : #{total}"
+end
+
+def total
+  total = 0
+  @current_sale.purchases.each do |purchase|
+    total += (purchase.quantity.to_i * purchase.product.price)
+  end
+  total
+end
+
 
 def trippin
   puts "You're trippin"
