@@ -49,7 +49,7 @@ def manager_menu
   when 'C'
     add_cashier
   when 'S'
-    view_sales
+    sales_menu
   when 'I'
     product_info
   when 'M'
@@ -82,6 +82,36 @@ def cashier_menu
     trippin
     cashier_menu
   end
+end
+
+def sales_menu
+  system 'clear'
+  puts "Would you like to..."
+  puts "[T] << View total sales"
+  puts "[S] << Search for sales within a date range"
+  puts "[M] << Return to the manager menu"
+  case gets.chomp.upcase
+  when "T"
+    total_sales
+  when "S"
+    search_sales
+  when "M"
+    manager_menu
+  else
+    trippin
+    sales_menu
+  end
+end
+
+def total_sales
+  total = 0
+  puts "Here are the total sales:"
+  Sale.all.each do |sale|
+    sale.purchases.each do |purchase|
+      total += (purchase.quantity.to_i * purchase.product.price)
+    end
+  end
+  puts total
 end
 
 def add_product
@@ -195,7 +225,6 @@ end
 def current_reciept
   puts "Here is your reciept:"
   @current_sale.purchases.each do |purchase|
-    # binding.pry
     puts "#{purchase.product.name} x #{purchase.quantity} @ #{purchase.product.price} = #{purchase.quantity * purchase.product.price}"
   end
   puts "Your total is : #{total}"
