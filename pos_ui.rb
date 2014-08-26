@@ -28,12 +28,6 @@ def welcome
   end
 end
 
-
-def trippin
-  puts "You're trippin"
-  sleep 2
-end
-
 def manager_menu
   system 'clear'
   puts 'Please choose from the following'
@@ -86,12 +80,31 @@ def add_product
   name = gets.chomp
   puts "Please enter the price."
   price = gets.chomp.to_f
-  new_product = Product.create({name: name, price: price})
-  puts "Your product has been added"
-  puts "Press any key to continue."
-  gets
+  Product.create({name: name, price: price})
+  puts "New product added!"
+  any_key
   manager_menu
 end
 
+def add_cashier
+  puts "Please enter Cashier name."
+  name = gets.chomp
+  puts "Please enter the 4 digit login information"
+  login = gets.chomp.to_i
+  Cashier.create({name: name, login: login})
+  puts "New cashier added!"
+  any_key
+  manager_menu
+end
+
+def trippin
+  puts "You're trippin"
+  sleep 2
+end
+
+def any_key
+  puts "Press any key to continue"
+  gets
+end
 
 welcome
