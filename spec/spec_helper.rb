@@ -5,6 +5,7 @@ require "purchase"
 require 'product'
 require 'sale'
 require 'cashier'
+require 'customer'
 
 ActiveRecord::Base.establish_connection(YAML::load(File.open('./db/config.yml'))["test"])
 
@@ -15,5 +16,6 @@ RSpec.configure do |config|
     Product.all.each { |product| product.destroy }
     Sale.all.each { |sale| sale.destroy }
     Cashier.all.each { |cashier| cashier.destroy }
+    Customer.all.each { |customer| customer.destroy }
   end
 end
